@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet Risk & Behavior Analytics | Portfolio</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #2563EB;
+            --bg-light: #F9FAFB;
+            --text-main: #1F2937;
+            --text-muted: #6B7280;
+            --border: #E5E7EB;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            color: var(--text-main);
+            line-height: 1.6;
+            background-color: #fff;
+        }
+
+        /* --- HEADER & HERO --- */
+        header {
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+            padding: 4rem 1rem;
+            text-align: center;
+        }
+        
+        h1 { font-size: 2.5rem; margin-bottom: 0.5rem; letter-spacing: -0.025em; }
+        
+        .subtitle {
+            font-size: 1.25rem; color: var(--text-muted); max-width: 700px; margin: 0 auto 1.5rem auto;
+        }
+
+        .badges { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+        .badge {
+            background: var(--bg-light); border: 1px solid var(--border); padding: 6px 14px;
+            border-radius: 99px; font-size: 0.875rem; font-weight: 500; color: var(--text-muted);
+        }
+
+        .cta-button {
+            display: inline-block; margin-top: 20px; padding: 10px 20px; background-color: var(--primary);
+            color: white; text-decoration: none; border-radius: 6px; font-weight: 600; transition: background 0.2s;
+        }
+        .cta-button:hover { background-color: #1d4ed8; }
+
+        /* --- LAYOUT --- */
+        .container { max-width: 1000px; margin: 0 auto; padding: 2rem 1rem; }
+        section { margin-bottom: 4rem; }
+        h2 { font-size: 1.75rem; margin-bottom: 1rem; border-left: 4px solid var(--primary); padding-left: 1rem; }
+        p { margin-bottom: 1rem; color: #374151; }
+
+        /* --- IFRAME WRAPPERS --- */
+        .chart-wrapper {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden; /* Crucial: Cuts off any edge overflow */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            margin-top: 1.5rem;
+            position: relative;
+        }
+        
+        /* The Magic Scaling Class */
+        iframe.fit-content {
+            border: none;
+            overflow: hidden;
+            /* SCALING LOGIC: 
+               1. We set width/height to 115% (making the window bigger, so content spreads out).
+               2. We scale it down to 0.87 (shrinking it back to fit the container).
+               Result: The content looks "zoomed out" and fits perfectly.
+            */
+            width: 115%;
+            height: 115%;
+            transform: scale(0.87);
+            transform-origin: 0 0;
+            display: block;
+        }
+
+        /* --- GRID FOR SIDE-BY-SIDE --- */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: center; }
+        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+
+        /* --- TABLE STYLING --- */
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 1rem; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { background-color: var(--bg-light); font-weight: 600; color: var(--text-muted); }
+        .highlight-row { background-color: #F0FDF4; font-weight: 600; }
+
+        footer { text-align: center; padding: 3rem; background: var(--bg-light); border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+    <header>
+    <h1>Wallet Risk &amp; Behavior Analytics</h1>
+    <p class="subtitle">
+        A two-part project that clusters ~1.2M Ethereum wallets by on‑chain behavior (Part A) and trains a transaction‑level fraud model on ETFD (Part B) to explore how a crypto platform might segment users, score risk, and decide when to block vs step‑up.
+    </p>
+    <div class="badges">
+        <span class="badge">Wallet Segmentation</span>
+        <span class="badge">Fraud Modeling (ETFD)</span>
+        <span class="badge">Precision–Recall &amp; Cost</span>
+        <span class="badge">Plotly &amp; Looker Studio</span>
+    </div>
+    <a href="https://github.com/jessicabat/crypto-risk-scoring" class="cta-button" target="_blank" rel="noopener">View Project on GitHub</a>
+    </header>
+
+
+    <div class="container">
+
+        <section id="segmentation">
+        <h2>1. Part A – Wallet Segmentation</h2>
+        <div class="grid">
+            <div>
+            <p>
+                Crypto platforms see millions of new wallets with almost no labeled history. Before any fraud labels exist, they still have to answer a basic question:
+                <strong>“What kind of wallet is this?”</strong>
+            </p>
+            <p>
+                To explore that, I pulled ~1.2M active Ethereum wallets from BigQuery and engineered wallet‑level behavior features (volume, counterparties, gas, tokens, activity window). Using
+                <strong>K‑Means clustering</strong>, I grouped them into a few repeatable patterns:
+            </p>
+            <ul>
+                <li>🐋 <strong>Large, High‑Volume Wallets:</strong> exchange / institutional‑like behavior, many counterparties, large flows.</li>
+                <li>🦄 <strong>DeFi‑Heavy / Contract Users:</strong> complex gas and token patterns from frequent smart contract interactions.</li>
+                <li>🛒 <strong>Active Retail:</strong> steady, moderate volumes and simpler usage.</li>
+                <li>🤖 <strong>Long Tail / Noisy Wallets:</strong> short‑lived, low‑value, high fan‑out behavior that often looks bot‑ or spam‑like.</li>
+            </ul>
+            <p>
+                The dashboard view below lets you slice these segments by wealth, activity, gas usage, and token behavior, similar to how a risk or product team might explore different customer cohorts.
+            </p>
+            <a href="https://lookerstudio.google.com/s/vub9BwmCKDU"
+                target="_blank"
+                style="color: var(--primary); font-weight: 600;">
+                Open Looker Dashboard ↗
+            </a>
+            </div>
+
+            <div style="width: 100%; height: 600px; overflow: hidden; position: relative; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <iframe 
+                src="https://lookerstudio.google.com/embed/reporting/e77cb7e4-ba56-4eba-8d9e-562f1a2785ff/page/aQPjF" 
+                frameborder="0" 
+                style="width: 175%; height: 175%; transform: scale(0.57); transform-origin: 0 0; border: 0;"
+                allowfullscreen
+                sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox">
+            </iframe>
+            </div>
+        </div>
+        </section>
+
+
+        <section id="modeling">
+        <h2>2. Part B – Fraud Modeling</h2>
+        <p>
+            After segmenting wallets, the next step is: <strong>“Given a specific transaction, how risky is it?”</strong> For this, I used the
+            <strong>ETFD Ethereum Transaction Fraud Detection</strong> dataset (≈85k labeled transactions, ~50% fraud / 50% normal) and trained XGBoost and Random Forest models.
+        </p>
+        <p>
+            I compared two feature setups:
+        </p>
+        <ul>
+            <li><strong>Scenario A – Full Context:</strong> includes features that count how often an address has interacted with known malicious wallets (“blacklist‑style” signals).</li>
+            <li><strong>Scenario B – Behavior Only:</strong> removes those counters and relies purely on generic behavior (total sent, received, activity window, etc.).</li>
+        </ul>
+        <p>
+            On the balanced validation set, Scenario A achieves ROC‑AUC ≈ 0.999 while Scenario B achieves ≈ 0.98. The ROC curves below show how much the malicious‑context features act like a cheat code compared to a pure behavior model.
+        </p>
+
+        <div class="chart-wrapper" style="height: 550px;">
+            <iframe src="assets/asset1_roc_interactive.html" class="fit-content" scrolling="no"></iframe>
+        </div>
+        <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 10px; text-align: center;">
+            <em>The behavior‑only model (orange) still performs strongly (≈0.98 AUC), which suggests we can catch many risky patterns from activity alone, even without explicit "bad address" lists.</em>
+        </p>
+        </section>
+
+
+        <section id="tradeoffs">
+        <h2>3. Precision–Recall Tradeoffs</h2>
+        <p>
+            In fraud detection, accuracy is not very informative. What matters is <strong>recall</strong> (how much fraud we catch) versus <strong>precision</strong> (how often we are right when we flag something).
+            For the behavior‑only model (Scenario B, XGBoost), I chose an operating threshold around <strong>0.81</strong> that targets roughly <strong>80% recall</strong>.
+        </p>
+        <div class="grid">
+            <div class="chart-wrapper" style="height: 500px;">
+            <iframe 
+                src="assets/asset2_pr_interactive.html" 
+                scrolling="no"
+                style="
+                width: 120%; 
+                height: 120%; 
+                transform: scale(0.83); 
+                transform-origin: 0 0; 
+                border: none;
+                ">
+            </iframe>
+            </div>
+            <div class="chart-wrapper" style="height: 500px;">
+            <iframe src="assets/asset3_cm_interactive.html" class="fit-content" scrolling="no"></iframe>
+            </div>
+        </div>
+        <p style="margin-top: 1rem;">
+            At this threshold on the validation set, the model catches about <strong>5,100 fraudulent transactions</strong> while wrongly flagging around <strong>175 legitimate ones</strong>.
+            In a real product, this is a natural point to <strong>send flagged transactions to a step‑up flow (e.g., 2FA or extra checks)</strong> instead of auto‑blocking everything the model doesn’t like.
+        </p>
+        </section>
+
+
+        <section id="roi">
+        <h2>4. Business Value &amp; Cost Tradeoffs</h2>
+        <p>
+            To connect model performance to business impact, I used a simple cost model:
+            each <strong>false negative (missed fraud)</strong> costs about <strong>$500</strong>, and each
+            <strong>false positive (legitimate user flagged)</strong> costs about <strong>$50</strong> in churn and support.
+        </p>
+        <p>
+            On a simulated test set with <strong>5% fraud / 95% normal</strong>:
+        </p>
+        <ul>
+            <li><strong>Do nothing:</strong> never flag anything → all fraud passes through → cost ≈ <strong>$165k</strong>.</li>
+            <li><strong>Behavior‑only model (Scenario B, same threshold):</strong> reduces theft to ≈<strong>$32.5k</strong> and adds ≈<strong>$8.3k</strong> of “friction” cost from false positives → total ≈ <strong>$40.8k</strong>.</li>
+        </ul>
+        <p>
+            In other words, the model converts a large amount of theft risk into a much smaller, more predictable operational cost, yielding roughly <strong>$124k</strong> in net savings for this batch under these assumptions.
+        </p>
+
+        <div class="chart-wrapper" style="height: 500px;">
+            <iframe src="assets/asset6_financial_impact.html" class="fit-content" scrolling="no"></iframe>
+        </div>
+        <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 10px; text-align: center;">
+            <em>The right bar shows how much fraud loss (red) is traded for a smaller support/friction cost (yellow), resulting in a large net reduction in expected loss.</em>
+        </p>
+        <p style="text-align:center; font-size:0.9rem; color:var(--text-muted);">
+        The model effectively turns a large theft risk into a manageable operational cost, which is exactly the trade a fraud team wants to make.
+        </p>
+
+        </section>
+
+        <section id="explainability">
+        <h2>5. Why the Model Flags Users (and Sometimes Gets It Wrong)</h2>
+        <p>
+            To understand how the behavior‑only model makes decisions, and where it fails, I combined global feature importance, SHAP, and simple error analysis.
+        </p>
+
+        <div class="grid" style="grid-template-columns: 0.4fr 0.6fr;">
+            <div>
+            <p>
+                The chart on the right shows the top behavioral features driving the fraud score. The model leans heavily on:
+            </p>
+            <ul>
+                <li><strong>Total transactions sent</strong> (`total_tx_sent`),</li>
+                <li><strong>How long the address has been active</strong> (`time_diff_first_last_received`),</li>
+                <li><strong>Total value received</strong> (`total_received`).</li>
+            </ul>
+            <p>
+                In plain language: short‑lived, low‑history senders with little prior inflow tend to be scored as higher risk, which matches common fraud patterns.
+            </p>
+            </div>
+            <div class="chart-wrapper" style="height: 450px;">
+            <iframe src="assets/asset4_importance_interactive.html" class="fit-content" scrolling="no"></iframe>
+            </div>
+        </div>
+
+        <div class="chart-wrapper" style="height: 550px; margin-top:1.5rem;">
+            <iframe src="assets/asset5_error_interactive.html" class="fit-content" scrolling="no"></iframe>
+        </div>
+        <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 10px; text-align: center;">
+            The interactive view above compares True Positives, False Positives, False Negatives, and True Negatives across key features (time active, total sent, total received).
+        </p>
+        <p> 
+            One key pattern:
+            <strong>new legitimate users often look almost identical to bots in their first few minutes</strong> (very short activity windows and low history).
+        </p>
+        <p>
+            That’s where product design matters: rather than hard‑blocking everyone the model flags here, a platform would typically use a
+            <strong>“new user cooldown”</strong> or extra verification to separate humans from automated abuse.
+        </p>
+        </section>
+
+
+        <section id="summary">
+            <h2>6. Performance Summary</h2>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Model</th>
+                            <th>Dataset</th>
+                            <th>Threshold</th>
+                            <th>Precision</th>
+                            <th>Recall</th>
+                            <th>F1</th>
+                            <th>False Positives</th>
+                            <th>Total Cost ($)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>XGB_Scenario_A</td>
+                            <td>Validation</td>
+                            <td>0.9750</td>
+                            <td>0.9977</td>
+                            <td>0.8998</td>
+                            <td>0.9462</td>
+                            <td>13</td>
+                            <td>320,150</td>
+                        </tr>
+                        <tr>
+                            <td>XGB_Scenario_B</td>
+                            <td>Validation</td>
+                            <td>0.8115</td>
+                            <td>0.9799</td>
+                            <td>0.7997</td>
+                            <td>0.8753</td>
+                            <td>175</td>
+                            <td>647,250</td>
+                        </tr>
+                        <tr class="highlight-row">
+                            <td>XGB_Scenario_B</td>
+                            <td>TEST_REALISTIC (5% Fraud)</td>
+                            <td>0.8115</td>
+                            <td>0.6148</td>
+                            <td>0.8030</td>
+                            <td>0.6965</td>
+                            <td>166</td>
+                            <td>40,800</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 10px;">
+                *The highlighted row represents the recommended production configuration evaluated on a realistic imbalanced dataset.
+            </p>
+        </section>
+
+        <section id="tech-stack">
+        <h2>7. Tech Stack</h2>
+        <div class="grid">
+            <div>
+            <h3>Data & Infrastructure</h3>
+            <ul>
+                <li>Google BigQuery – Ethereum public dataset (transactions, token_transfers)</li>
+                <li>Kaggle – ETFD Ethereum Transaction Fraud Detection dataset</li>
+            </ul>
+
+            <h3>Modeling & Analysis</h3>
+            <ul>
+                <li>Python, Jupyter Notebooks</li>
+                <li>pandas, NumPy, scikit‑learn</li>
+                <li>XGBoost, RandomForest</li>
+                <li>SHAP for model explainability</li>
+            </ul>
+            </div>
+            <div>
+            <h3>Visualization</h3>
+            <ul>
+                <li>Plotly – interactive ROC/PR curves, confusion matrices, feature importance, error analysis, cost charts</li>
+                <li>Google Looker Studio – wallet segmentation dashboard (Part A)</li>
+            </ul>
+
+            <h3>Collaboration</h3>
+            <ul>
+                <li>GitHub – version control, project README</li>
+            </ul>
+            </div>
+        </div>
+        </section>
+
+        <p style="margin-top: 1.5rem;">
+        For full implementation details, see the 
+        <a href="https://github.com/jessicabat/crypto-risk-scoring" target="_blank" style="color: var(--primary); font-weight:600;">GitHub repo</a>
+        and 
+        <a href="https://github.com/jessicabat/crypto-risk-scoring/blob/main/README.md" target="_blank" style="color: var(--primary); font-weight:600;">project README</a>.
+        </p>
+
+
+
+    </div>
+
+    <footer>
+        <p>Jessica Batbayar | <a href="https://www.linkedin.com/in/jessica-batbayar/" target="_blank" style="color: var(--primary);">LinkedIn</a> | <a href="https://github.com/jessicabat" target="_blank" style="color: var(--primary);">GitHub</a></p>
+    </footer>
+
+</body>
+</html>

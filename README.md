@@ -2,7 +2,9 @@
 
 **End‑to‑end exploration of how to score and segment crypto wallets using on‑chain data, with unsupervised clustering (Part A) and supervised fraud modeling (Part B).**
 
-[![Live Dashboard](https://img.shields.io/badge/View_Live_Dashboard-Looker_Studio-blue?style=for-the-badge&logo=google-looker-studio)](https://lookerstudio.google.com/s/vub9BwmCKDU)
+### Explore the Project
+[![Website](https://img.shields.io/badge/Website-GitHub_Pages-1db954?style=flat&logo=google-chrome&logoColor=white)](https://jessicabat.github.io/crypto-risk-scoring/)
+[![Dashboard](https://img.shields.io/badge/Dashboard-Looker_Studio-4285F4?style=flat&logo=google-looker-studio&logoColor=white)](https://lookerstudio.google.com/s/vub9BwmCKDU)
 
 ---
 
