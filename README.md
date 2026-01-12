@@ -55,7 +55,7 @@ Instead of downloading raw CSVs, I wrote SQL directly in BigQuery to aggregate t
 - Computes basic statistics per wallet (transaction counts, ETH sent/received, unique counterparties).  
 - Joins in token activity from `token_transfers` (e.g., number of token transfers, number of distinct token contracts touched).
 
-This produces one row per wallet with features describing its behavior over the window. The SQL query is in [`data/query.sql`](data/query.sql).
+This produces one row per wallet with features describing its behavior over the window. The SQL query is in [`data/query.md`](data/query.md).
 
 ### 2. Feature Engineering
 
@@ -135,7 +135,7 @@ The goal is not to build a production tool, but to show how analytics and produc
 
 ## Part B – Fraud Detection (Supervised)
 
-**Goal:** Use the **ETFD (Ethereum Transaction Fraud Detection)** dataset to build and explain transaction-level fraud models, and reason about how a crypto platform would use them in practice.
+**Goal:** Use the **ETFD (Ethereum Transaction Fraud Detection)** dataset to build and explain transaction-level fraud models, and reason about how a platform would use them in practice.
 
 ### 1. Dataset & Problem Framing
 
