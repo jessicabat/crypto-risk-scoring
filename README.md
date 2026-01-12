@@ -28,10 +28,10 @@
 
 Crypto exchanges and fintech apps face a similar problem: when a new wallet shows up, there is very little labeled history, but the platform still has to make risk decisions (limits, extra checks, monitoring).
 
-This project is a small prototype of how a platform like Coinbase, Gemini, or Robinhood could combine:
+This project is a small prototype of how a platform could combine:
 
 1. **Part A – Behavioral Segmentation:** Use raw Ethereum transactions and token transfers to cluster wallets into behavioral “types,” then reason about risk and product policies for each segment.  
-2. **Part B – Fraud Detection:** Train supervised models on a labeled Ethereum fraud dataset (ETFD)[web:218] and study precision–recall tradeoffs, financial cost, and how scores would be used in a real risk engine.
+2. **Part B – Fraud Detection:** Train supervised models on a labeled Ethereum fraud dataset (ETFD) and study precision–recall tradeoffs, financial cost, and how scores would be used in a real risk engine.
 
 ---
 
@@ -41,7 +41,7 @@ This project is a small prototype of how a platform like Coinbase, Gemini, or Ro
 
 ### 1. Data Pipeline
 
-- **Source:** Google BigQuery public Ethereum dataset (`bigquery-public-data.crypto_ethereum`).[web:218]  
+- **Source:** Google BigQuery public Ethereum dataset (`bigquery-public-data.crypto_ethereum`).  
 - **Scope:** Roughly 1.2M active wallets over a recent ~1‑month window in Q4 2025 (recent enough to be interesting, small enough to work with).  
 - **Tables used:**
   - `transactions` – native ETH transfers.
@@ -53,7 +53,7 @@ Instead of downloading raw CSVs, I wrote SQL directly in BigQuery to aggregate t
 - Computes basic statistics per wallet (transaction counts, ETH sent/received, unique counterparties).  
 - Joins in token activity from `token_transfers` (e.g., number of token transfers, number of distinct token contracts touched).
 
-This produces one row per wallet with features describing its behavior over the window. The SQL is in `data/query.md`.
+This produces one row per wallet with features describing its behavior over the window. The SQL query is in [`data/query.sql`](data/query.sql).
 
 ### 2. Feature Engineering
 
@@ -82,7 +82,7 @@ The clusters are not ground truth labels, but they give a useful mental model fo
 - Likely to include institutional, exchange, or sophisticated trading wallets.
 
 **Risk / Policy idea:**  
-Avoid automatic blocks. Treat these wallets as “high‑touch”: stronger monitoring and enhanced due diligence, but be careful about adding friction that could push them away.
+Avoid automatic blocks. Treat these wallets as “high‑touch”: stronger monitoring and enhanced due diligence, but be careful about adding friction that could push them away. Use manual review for anomalous behavior rather than blanket rules.
 
 ---
 
@@ -109,7 +109,7 @@ These look like “core” retail customers. Reasonable buy/fund limits that inc
 
 ---
 
-#### 🤖 Cluster 0 – Long Tail / One‑off / Noisy Wallets (majority)
+#### 🤖 Cluster 0 – Long Tail / Low-Value / Noisy Wallets (majority)
 
 - Many wallets with very small balances or just a handful of transactions.  
 - Often higher fan‑out ratios and short activity spans.  
@@ -117,7 +117,7 @@ These look like “core” retail customers. Reasonable buy/fund limits that inc
   - Bots, airdrop participants, experimental wallets, and one‑time users.
 
 **Risk / Policy idea:**  
-Automate as much as possible: strict KYC and simple rules for this group. The goal is to keep operational overhead low while still catching obviously problematic behavior.
+Automate as much as possible: strict KYC and simple rules for this group to keep human review focused on higher‑value segments. The goal is to keep operational overhead low while still catching obviously problematic behavior.
 
 ### 4. Operational Dashboard
 
@@ -133,19 +133,19 @@ The goal is not to build a production tool, but to show how analytics and produc
 
 ## Part B – Fraud Detection (Supervised)
 
-**Goal:** Use the **ETFD (Ethereum Transaction Fraud Detection)** dataset[web:218] to build and explain transaction-level fraud models, and reason about how a crypto platform would use them in practice.
+**Goal:** Use the **ETFD (Ethereum Transaction Fraud Detection)** dataset to build and explain transaction-level fraud models, and reason about how a crypto platform would use them in practice.
 
 ### 1. Dataset & Problem Framing
 
-For supervised modeling, I used the **ETFD** dataset from Kaggle.[web:218]
+For supervised modeling, I used the **ETFD** dataset from Kaggle.
 
 - **Size:** 85,003 labeled rows.  
-- **Label:** `Fraud` (0 = normal, 1 = fraud), roughly **50/50** in this dataset.[web:218]  
+- **Label:** `Fraud` (0 = normal, 1 = fraud), roughly **50/50** in this dataset.  
 - **Features (14 numeric + label):**
   - Time / block: `Month`, `Day`, `Hour`, `blockNumber`, `confirmations`.  
   - Received behavior: `mean_value_received`, `variance_value_received`, `total_received`, `time_diff_first_last_received`.  
   - Sent behavior: `total_tx_sent`, `total_tx_sent_unique`.  
-  - Malicious-interaction counters: `total_tx_sent_malicious`, `total_tx_sent_malicious_unique`, `total_tx_received_malicious_unique`.[web:218]
+  - Malicious-interaction counters: `total_tx_sent_malicious`, `total_tx_sent_malicious_unique`, `total_tx_received_malicious_unique`.
 
 Each row can be thought of as:
 
@@ -216,7 +216,7 @@ To capture this, I:
 
 #### Realistic 5% Fraud Test
 
-ETFD is ~50/50 fraud vs normal, which is convenient for training but not realistic.[web:218] Real fraud rates are closer to 1–5%. To approximate this:
+ETFD is ~50/50 fraud vs normal, which is convenient for training but not realistic. Real fraud rates are closer to 1–5%. To approximate this:
 
 - Took the held-out test split (originally 50/50).  
 - Kept all normal transactions.  
@@ -324,8 +324,8 @@ This project is a small, end-to-end prototype of that workflow on a single chain
 
 ## Tech Stack
 
-- **Data Warehouse:** Google BigQuery (Ethereum public dataset)[web:218]  
-- **Labeled Fraud Data:** ETFD Ethereum Transaction Fraud Detection dataset (Kaggle)[web:218]  
+- **Data Warehouse:** Google BigQuery (Ethereum public dataset)  
+- **Labeled Fraud Data:** ETFD Ethereum Transaction Fraud Detection dataset (Kaggle)  
 - **Language & Libraries:** Python, pandas, NumPy, scikit‑learn, XGBoost, RandomForest  
 - **Explainability:** SHAP (tree explainer)  
 - **Visualization:**
